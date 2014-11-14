@@ -1,0 +1,17 @@
+digraph G {
+    varint_encoding [label="VarInt serialization"]
+    key1_encrypt [label="PubKey1s encryption"]
+    send_message [label="Allow Alice to send messages to a router"]
+    bigint_encoding [label="BigInt serialization"]
+    pubkey1_encoding [label="PubKey1 serialization"]
+    key1_decrypt [label="PriKey1s descryption"]
+    retrieve_message [label="Allow Bob to retrieve messages from the router"]
+    subscribe_message [label="Allow Bob to listen for new messages delivered to the router"]
+    root [label="Allow Alice to send Bob an encrypted, asynchronously delivered message"]
+    prikey1_encoding [label="PriKey1 serialization"]
+
+    bigint_encoding -> varint_encoding
+    root -> subscribe_message
+    root -> send_message
+    root -> retrieve_message
+}

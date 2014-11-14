@@ -1,3 +1,5 @@
+#!/bin/env python
+
 import re
 import string
 
@@ -8,14 +10,18 @@ dpnd_re = re.compile(r"(%s)\s*>\s*(%s)$" % (name, name))
 class ParseException(RuntimeError): pass
 
 class Task:
-    def __init__(self, name, description, status):
+    def __init__(self, name, desc, status):
         self.name = name
-        self.description = description
+        self.desc = desc
         self.status = status
         self.children = set()
         self.parents = set()
     def __repr__(self):
         return "%s:%s" % (self.name, self.status)
+    def dot_name(self):
+        return string.replace(self.name, "-", "_")
+    def dot_desc(self):
+        return '"%s"' % string.replace(self.desc, '"', '\\"')
 
 def parse_file(file_name):
     tasks = {}
@@ -34,9 +40,9 @@ def parse_file(file_name):
             continue
         elif task:
             name = task.group(1)
-            description = task.group(2)
+            desc = task.group(2)
             status = task.group(3)
-            tasks[name] = Task(name, description, status)
+            tasks[name] = Task(name, desc, status)
         elif dpnd:
             parent = dpnd.group(1)
             child = dpnd.group(2)
@@ -47,9 +53,19 @@ def parse_file(file_name):
     for d in dependencies:
         if not tasks.has_key(d[0]): raise ParseException("Task '%s' was never defined." % d[0])
         if not tasks.has_key(d[1]): raise ParseException("Task '%s' was never defined." % d[1])
-        tasks[d[0]].children.add(d[1])
-        tasks[d[1]].parents.add(d[0])
+        tasks[d[0]].children.add(tasks[d[1]])
+        tasks[d[1]].parents.add(tasks[d[0]])
 
     return tasks
 
-for v in parse_file("sample.txt").values(): print v
+def print_dot_file(tasks):
+    print "digraph G {"
+    for t in tasks.values():
+        print "    %s [label=%s]" % (t.dot_name(), t.dot_desc())
+    print
+    for t in tasks.values():
+        for d in t.children:
+            print "    %s -> %s" % (t.dot_name(), d.dot_name())
+    print "}"
+
+print_dot_file(parse_file("sample.txt"))
