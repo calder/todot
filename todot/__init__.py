@@ -1,7 +1,19 @@
 #!/bin/env python
 
+import argparse
 import re
 import string
+
+INFILE_HELP = "the input todo file"
+
+parser = argparse.ArgumentParser('todot')
+parser.add_argument('INFILE', help=INFILE_HELP)
+args = parser.parse_args()
+
+def fail(message, suggestion=None):
+    print("Error:", message)
+    if suggestion: print("Note:", suggestion)
+    exit(1)
 
 name = "[\w-]+"
 task_re = re.compile(r"(%s)\s*=\s*(.*?)\s*\[(%s)\]$" % (name, name))
@@ -68,4 +80,7 @@ def print_dot_file(tasks):
             print "    %s -> %s" % (t.dot_name(), d.dot_name())
     print "}"
 
-print_dot_file(parse_file("sample.txt"))
+def main():
+    print_dot_file(parse_file(args.INFILE))
+
+if __name__ == "__main__": main()
